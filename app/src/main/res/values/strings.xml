@@ -1,0 +1,10 @@
+<resources>
+	<string name="app_name">My Mapbox</string>
+	<!-- TODO: add access token -->
+	<string name="mapbox_access_token">
+
+    </string>
+
+	<string name="preference_dark_map">dark</string>
+	<string name="preference_traffic">traffic</string>
+</resources>

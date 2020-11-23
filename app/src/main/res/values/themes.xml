@@ -1,0 +1,42 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+	<!-- Base application theme. -->
+	<style name="Theme.MyMapbox" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+		<!-- Primary brand color. -->
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>
+		<item name="colorOnPrimary">@color/white</item>
+		<!-- Secondary brand color. -->
+		<item name="colorSecondary">@color/colorSecondary</item>
+		<item name="colorSecondaryVariant">@color/colorSecondary</item>
+		<item name="colorOnSecondary">@color/white</item>
+		<!--colorBackground appears behind scrollable content and is used for the default window-->
+		<!--background. colorSurface is mapped to the surface of components such as cards, sheets-->
+		<!--and menus. colorError is used to indicate an error state for components such as-->
+		<!--text fields.-->
+		<item name="android:colorBackground">@color/colorSurface</item>
+		<item name="colorSurface">@color/colorSurface</item>
+		<item name="colorOnSurface">@color/white</item>
+		<item name="colorOnBackground">@color/white</item>
+		<item name="android:textColorPrimary">@color/white</item>
+		<!-- Status bar color. -->
+		<item name="android:statusBarColor" tools:ignore="NewApi">?attr/colorSurface</item>
+		<!-- Customize your theme here. -->
+		<item name="shapeAppearanceSmallComponent">
+			@style/ShapeAppearance.MyTheme.SmallComponent
+		</item>
+		<item name="shapeAppearanceMediumComponent">
+			@style/ShapeAppearance.MyTheme.MediumComponent
+		</item>
+		<item name="shapeAppearanceLargeComponent">
+			@style/ShapeAppearance.MyTheme.LargeComponent
+		</item>
+		<item name="android:windowLightStatusBar" tools:ignore="NewApi">false</item>
+		<item name="android:navigationBarColor" tools:ignore="NewApi">
+			?android:attr/colorBackground
+		</item>
+		<item name="android:windowLightNavigationBar" tools:ignore="NewApi">false</item>
+		<item name="android:navigationBarDividerColor" tools:ignore="NewApi">
+			?attr/colorControlHighlight
+		</item>
+	</style>
+</resources>
