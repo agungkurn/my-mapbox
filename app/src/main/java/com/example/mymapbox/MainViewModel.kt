@@ -4,7 +4,7 @@ import androidx.lifecycle.*
 import com.example.mymapbox.core.model.DataState
 import com.example.mymapbox.core.model.FeaturesItem
 import com.example.mymapbox.core.model.SearchResponse
-import com.mapbox.mapboxsdk.geometry.LatLng
+import com.example.mymapbox.search.SearchRepository
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -22,8 +22,6 @@ class MainViewModel(private val repository: SearchRepository) : ViewModel() {
 			}
 		}
 	}
-
-	val isInSearchMode = MutableLiveData<Boolean>()
 
 	private var searchRequest: Deferred<SearchResponse>? = null
 	private val mSearchResult = MutableLiveData<DataState<List<FeaturesItem>>>()
@@ -47,5 +45,5 @@ class MainViewModel(private val repository: SearchRepository) : ViewModel() {
 		}
 	}
 
-	val foundPlacePosition = MutableLiveData<Pair<String, LatLng>>()
+	val foundPlacePosition = MutableLiveData<FeaturesItem?>(null)
 }

@@ -20,7 +20,7 @@ data class FeaturesItem(
 	val placeType: List<String> = emptyList(),
 
 	@field:SerializedName("center")
-	val center: List<Double?>? = null,
+	val center: List<Double> = emptyList(),
 
 	@field:SerializedName("context")
 	val context: List<ContextItem> = emptyList(),

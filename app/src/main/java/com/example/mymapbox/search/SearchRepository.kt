@@ -1,4 +1,4 @@
-package com.example.mymapbox
+package com.example.mymapbox.search
 
 import com.example.mymapbox.core.api.ApiService
 import com.example.mymapbox.core.model.SearchResponse

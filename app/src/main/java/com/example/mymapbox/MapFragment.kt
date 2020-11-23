@@ -125,28 +125,46 @@ class MapFragment : Fragment() {
 	}
 
 	private fun observeSearchResult(mapbox: MapboxMap, style: Style) {
-		viewModel.foundPlacePosition.observe(viewLifecycleOwner) { (placeName, latLong) ->
-			// remove marker
-			style.getLayer(MARKER_LAYER_ID)?.let {
-				style.removeLayer(it)
-			}
-			style.getSource(MARKER_LOCATION_ID)?.let {
-				style.removeSource(it)
-			}
+		viewModel.foundPlacePosition.observe(viewLifecycleOwner) {
+			if (it != null && it.center.isNotEmpty()) {
+				// remove marker
+				style.getLayer(MARKER_LAYER_ID)?.let { layer ->
+					style.removeLayer(layer)
+				}
+				style.getSource(MARKER_LOCATION_ID)?.let { source ->
+					style.removeSource(source)
+				}
 
-			// add marker
-			style.addSource(
-				GeoJsonSource(
-					MARKER_LOCATION_ID,
-					Feature.fromGeometry(Point.fromLngLat(latLong.longitude, latLong.latitude))
+				// add marker
+				val foundLocation = LatLng(it.center.last(), it.center.first())
+				style.addSource(
+					GeoJsonSource(
+						MARKER_LOCATION_ID,
+						Feature.fromGeometry(
+							Point.fromLngLat(foundLocation.longitude, foundLocation.latitude)
+						)
+					)
 				)
-			)
-			style.addLayer(
-				SymbolLayer(MARKER_LAYER_ID, MARKER_LOCATION_ID)
-					.withProperties(PropertyFactory.iconImage(MARKER_ICON_ID))
-			)
+				style.addLayer(
+					SymbolLayer(MARKER_LAYER_ID, MARKER_LOCATION_ID)
+						.withProperties(PropertyFactory.iconImage(MARKER_ICON_ID))
+				)
 
-			moveCamera(latLong, mapbox)
+				moveCamera(foundLocation, mapbox)
+			} else {
+				// remove marker
+				style.getLayer(MARKER_LAYER_ID)?.let { layer ->
+					style.removeLayer(layer)
+				}
+				style.getSource(MARKER_LOCATION_ID)?.let { source ->
+					style.removeSource(source)
+				}
+
+				// Reset after search
+				mapbox.locationComponent.lastKnownLocation?.let { location ->
+					moveCamera(LatLng(location.latitude, location.longitude), mapbox)
+				}
+			}
 		}
 	}
 
