@@ -15,6 +15,7 @@ import com.example.mymapbox.MainViewModel
 import com.example.mymapbox.core.SearchResultAdapter
 import com.example.mymapbox.core.model.DataState
 import com.example.mymapbox.core.model.FeaturesItem
+import com.example.mymapbox.core.model.SearchingState
 import com.example.mymapbox.databinding.FragmentSearchBinding
 
 class SearchFragment : Fragment() {
@@ -32,6 +33,7 @@ class SearchFragment : Fragment() {
 
 	override fun onActivityCreated(savedInstanceState: Bundle?) {
 		super.onActivityCreated(savedInstanceState)
+		binding?.inputSearch?.editText?.requestFocus()
 		setupSearchField()
 	}
 
@@ -86,7 +88,7 @@ class SearchFragment : Fragment() {
 			(activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
 				.hideSoftInputFromWindow(binding?.inputSearch?.editText?.windowToken, 0)
 
-			viewModel.foundPlacePosition.value = it
+			viewModel.foundPlacePosition.value = SearchingState.FoundPlace(it)
 		}.also {
 			binding?.rvSearch?.adapter = it
 			it.notifyDataSetChanged()

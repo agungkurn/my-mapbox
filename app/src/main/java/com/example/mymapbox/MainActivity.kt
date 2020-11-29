@@ -5,7 +5,9 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.mymapbox.core.api.ApiFactory
+import com.example.mymapbox.core.model.SearchingState
 import com.example.mymapbox.databinding.ActivityMainBinding
+import com.example.mymapbox.preference.MapPreferenceFragment
 import com.example.mymapbox.search.PlaceSummaryFragment
 import com.example.mymapbox.search.SearchFragment
 import com.example.mymapbox.search.SearchRepository
@@ -30,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 
 		val repository = SearchRepository.getInstance(ApiFactory.service)
 		viewModel = ViewModelProvider(
-			this, MainViewModel.getViewModelFactory(repository)
+			this, MainViewModel.getViewModelFactory(repository, application)
 		)[MainViewModel::class.java]
 
 		setupSearchLayout()
@@ -47,20 +49,20 @@ class MainActivity : AppCompatActivity() {
 						binding.fabSettings.show()
 					}
 					BottomSheetBehavior.STATE_COLLAPSED -> {
-						if (viewModel.foundPlacePosition.value == null) {
+						if (viewModel.foundPlacePosition.value is SearchingState.Idle) {
 							// If not in search mode, disable collapse
 							this@MainActivity.bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
 						}
 					}
 					BottomSheetBehavior.STATE_EXPANDED -> {
-						if (viewModel.foundPlacePosition.value != null) {
+						if (viewModel.foundPlacePosition.value is SearchingState.FoundPlace) {
 							// If in search mode, disable expanded
 							this@MainActivity.bottomSheet.state =
 								BottomSheetBehavior.STATE_COLLAPSED
 						}
 					}
 					BottomSheetBehavior.STATE_HALF_EXPANDED -> {
-						if (viewModel.foundPlacePosition.value != null) {
+						if (viewModel.foundPlacePosition.value is SearchingState.FoundPlace) {
 							// If in search mode, disable expanded
 							this@MainActivity.bottomSheet.state =
 								BottomSheetBehavior.STATE_COLLAPSED
@@ -82,14 +84,26 @@ class MainActivity : AppCompatActivity() {
 				.commit()
 		}
 
+		binding.fabSettings.setOnClickListener {
+			binding.fabSearch.hide()
+			binding.fabSettings.hide()
+
+			bottomSheet.state = BottomSheetBehavior.STATE_HALF_EXPANDED
+
+			supportFragmentManager
+				.beginTransaction()
+				.replace(binding.layoutBottom.id, MapPreferenceFragment())
+				.commit()
+		}
+
 		binding.ivClose.setOnClickListener {
-			viewModel.foundPlacePosition.value = null
+			viewModel.foundPlacePosition.value = SearchingState.Idle
 		}
 
 		bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
 
 		viewModel.foundPlacePosition.observe(this) {
-			if (it != null) {
+			if (it is SearchingState.FoundPlace) {
 				// Hide irrelevant controls
 				binding.fabSettings.hide()
 				binding.fabSearch.hide()
@@ -100,7 +114,7 @@ class MainActivity : AppCompatActivity() {
 				// Show search result
 				supportFragmentManager
 					.beginTransaction()
-					.replace(binding.layoutBottom.id, PlaceSummaryFragment.getInstance(it))
+					.replace(binding.layoutBottom.id, PlaceSummaryFragment.getInstance(it.data))
 					.commit()
 			} else {
 				bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
@@ -109,9 +123,11 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	override fun onBackPressed() {
-		if (viewModel.foundPlacePosition.value != null || bottomSheet.state != BottomSheetBehavior.STATE_HIDDEN) {
+		if (viewModel.foundPlacePosition.value is SearchingState.FoundPlace
+			|| bottomSheet.state != BottomSheetBehavior.STATE_HIDDEN
+		) {
 			// clear search result
-			viewModel.foundPlacePosition.value = null
+			viewModel.foundPlacePosition.value = SearchingState.Idle
 			return
 		}
 

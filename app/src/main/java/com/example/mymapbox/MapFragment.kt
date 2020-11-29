@@ -13,6 +13,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.example.mymapbox.core.model.SearchingState
 import com.example.mymapbox.databinding.FragmentMapBinding
 import com.mapbox.android.core.location.LocationEngineRequest
 import com.mapbox.geojson.Feature
@@ -50,12 +51,12 @@ class MapFragment : Fragment() {
 
 	override fun onActivityCreated(savedInstanceState: Bundle?) {
 		super.onActivityCreated(savedInstanceState)
+		this.savedInstanceState = savedInstanceState
 
 		if (ContextCompat.checkSelfPermission(
 				requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
 			) == PackageManager.PERMISSION_GRANTED
 		) {
-			this.savedInstanceState = savedInstanceState
 			prepareMap()
 		} else {
 			ActivityCompat.requestPermissions(
@@ -71,16 +72,29 @@ class MapFragment : Fragment() {
 			it.uiSettings.attributionGravity = Gravity.BOTTOM
 			it.uiSettings.logoGravity = Gravity.BOTTOM
 
-			it.setStyle(
-				Style.Builder()
-					.fromUri(Style.TRAFFIC_DAY)
-					.withImage(
-						MARKER_ICON_ID,
-						BitmapFactory.decodeResource(
-							resources, R.drawable.mapbox_marker_icon_default
-						)
+			val mapStyle = Style.Builder()
+				.withImage(
+					MARKER_ICON_ID,
+					BitmapFactory.decodeResource(
+						resources, R.drawable.mapbox_marker_icon_default
 					)
-			) { style ->
+				)
+
+			if (viewModel.isDarkModeEnabled) {
+				if (viewModel.isTrafficFlowsEnabled) {
+					mapStyle.fromUri(Style.TRAFFIC_NIGHT)
+				} else {
+					mapStyle.fromUri(Style.DARK)
+				}
+			} else {
+				if (viewModel.isTrafficFlowsEnabled) {
+					mapStyle.fromUri(Style.TRAFFIC_DAY)
+				} else {
+					mapStyle.fromUri(Style.LIGHT)
+				}
+			}
+
+			it.setStyle(mapStyle) { style ->
 				activateLocationComponent(it, style)
 				observeSearchResult(it, style)
 			}
@@ -126,43 +140,53 @@ class MapFragment : Fragment() {
 
 	private fun observeSearchResult(mapbox: MapboxMap, style: Style) {
 		viewModel.foundPlacePosition.observe(viewLifecycleOwner) {
-			if (it != null && it.center.isNotEmpty()) {
-				// remove marker
-				style.getLayer(MARKER_LAYER_ID)?.let { layer ->
-					style.removeLayer(layer)
+			when (it) {
+				is SearchingState.NotUsed -> {
 				}
-				style.getSource(MARKER_LOCATION_ID)?.let { source ->
-					style.removeSource(source)
-				}
+				is SearchingState.FoundPlace -> {
+					if (it.data.center.isNotEmpty()) {
+						// remove marker
+						style.getLayer(MARKER_LAYER_ID)?.let { layer ->
+							style.removeLayer(layer)
+						}
+						style.getSource(MARKER_LOCATION_ID)?.let { source ->
+							style.removeSource(source)
+						}
 
-				// add marker
-				val foundLocation = LatLng(it.center.last(), it.center.first())
-				style.addSource(
-					GeoJsonSource(
-						MARKER_LOCATION_ID,
-						Feature.fromGeometry(
-							Point.fromLngLat(foundLocation.longitude, foundLocation.latitude)
+						// add marker
+						val foundLocation = LatLng(it.data.center.last(), it.data.center.first())
+						style.addSource(
+							GeoJsonSource(
+								MARKER_LOCATION_ID,
+								Feature.fromGeometry(
+									Point.fromLngLat(
+										foundLocation.longitude,
+										foundLocation.latitude
+									)
+								)
+							)
 						)
-					)
-				)
-				style.addLayer(
-					SymbolLayer(MARKER_LAYER_ID, MARKER_LOCATION_ID)
-						.withProperties(PropertyFactory.iconImage(MARKER_ICON_ID))
-				)
+						style.addLayer(
+							SymbolLayer(MARKER_LAYER_ID, MARKER_LOCATION_ID)
+								.withProperties(PropertyFactory.iconImage(MARKER_ICON_ID))
+						)
 
-				moveCamera(foundLocation, mapbox)
-			} else {
-				// remove marker
-				style.getLayer(MARKER_LAYER_ID)?.let { layer ->
-					style.removeLayer(layer)
+						moveCamera(foundLocation, mapbox)
+					}
 				}
-				style.getSource(MARKER_LOCATION_ID)?.let { source ->
-					style.removeSource(source)
-				}
+				is SearchingState.Idle -> {
+					// remove marker
+					style.getLayer(MARKER_LAYER_ID)?.let { layer ->
+						style.removeLayer(layer)
+					}
+					style.getSource(MARKER_LOCATION_ID)?.let { source ->
+						style.removeSource(source)
+					}
 
-				// Reset after search
-				mapbox.locationComponent.lastKnownLocation?.let { location ->
-					moveCamera(LatLng(location.latitude, location.longitude), mapbox)
+					// Reset after search
+					mapbox.locationComponent.lastKnownLocation?.let { location ->
+						moveCamera(LatLng(location.latitude, location.longitude), mapbox)
+					}
 				}
 			}
 		}
