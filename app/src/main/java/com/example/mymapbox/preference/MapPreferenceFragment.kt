@@ -1,16 +1,29 @@
 package com.example.mymapbox.preference
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.mymapbox.MainViewModel
 import com.example.mymapbox.databinding.FragmentMapPreferenceBinding
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class MapPreferenceFragment : Fragment() {
+class MapPreferenceFragment private constructor() : BottomSheetDialogFragment() {
+	companion object {
+		private var instance: MapPreferenceFragment? = null
+
+		fun getInstance(): MapPreferenceFragment {
+			if (instance == null) {
+				instance = MapPreferenceFragment()
+			}
+
+			return instance!!
+		}
+	}
+
 	private var binding: FragmentMapPreferenceBinding? = null
 
 	private val viewModel by activityViewModels<MainViewModel>()
@@ -50,5 +63,10 @@ class MapPreferenceFragment : Fragment() {
 				).show()
 			}
 		}
+	}
+
+	override fun onDismiss(dialog: DialogInterface) {
+		super.onDismiss(dialog)
+		instance = null
 	}
 }

@@ -35,29 +35,4 @@
 			app:backgroundTint="?colorSurface"
 			app:fabSize="mini" />
 	</LinearLayout>
-
-	<LinearLayout
-		android:id="@+id/bottom_sheet"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:background="?colorSurface"
-		android:orientation="vertical"
-		app:behavior_hideable="true"
-		app:behavior_peekHeight="240dp"
-		app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
-
-		<ImageView
-			android:id="@+id/iv_close"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="end"
-			android:layout_margin="16dp"
-			android:src="@drawable/ic_baseline_close_24" />
-
-		<androidx.fragment.app.FragmentContainerView
-			android:id="@+id/layout_bottom"
-			android:name="com.example.mymapbox.search.SearchFragment"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent" />
-	</LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

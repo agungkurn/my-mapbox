@@ -1,20 +1,23 @@
 package com.example.mymapbox.search
 
+import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import com.example.mymapbox.core.model.FeaturesItem
 import com.example.mymapbox.databinding.FragmentPlaceSummaryBinding
+import com.example.mymapbox.navigation.NavigationActivity
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class PlaceSummaryFragment private constructor() : Fragment() {
+class PlaceSummaryFragment private constructor() : BottomSheetDialogFragment() {
 	companion object {
-		private var featuresItem: FeaturesItem? = null
+		private var destinationFeatures: FeaturesItem? = null
 
 		fun getInstance(featuresItem: FeaturesItem): PlaceSummaryFragment {
-			if (this.featuresItem == null) {
-				this.featuresItem = featuresItem
+			if (this.destinationFeatures == null) {
+				this.destinationFeatures = featuresItem
 			}
 
 			return PlaceSummaryFragment()
@@ -35,8 +38,17 @@ class PlaceSummaryFragment private constructor() : Fragment() {
 		super.onViewCreated(view, savedInstanceState)
 
 		binding?.let {
-			it.tvPlaceName.text = featuresItem?.text ?: "No name"
-			it.tvAddress.text = featuresItem?.placeName ?: "-"
+			it.tvPlaceName.text = destinationFeatures?.text ?: "No name"
+			it.tvAddress.text = destinationFeatures?.placeName ?: "-"
+
+			it.btnNavigate.setOnClickListener {
+				startActivity(Intent(context, NavigationActivity::class.java))
+			}
 		}
+	}
+
+	override fun onDismiss(dialog: DialogInterface) {
+		destinationFeatures = null
+		super.onDismiss(dialog)
 	}
 }

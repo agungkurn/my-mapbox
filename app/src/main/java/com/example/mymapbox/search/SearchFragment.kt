@@ -1,15 +1,13 @@
 package com.example.mymapbox.search
 
-import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.mymapbox.MainViewModel
 import com.example.mymapbox.core.SearchResultAdapter
@@ -17,9 +15,22 @@ import com.example.mymapbox.core.model.DataState
 import com.example.mymapbox.core.model.FeaturesItem
 import com.example.mymapbox.core.model.SearchingState
 import com.example.mymapbox.databinding.FragmentSearchBinding
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class SearchFragment : Fragment() {
-	private val TAG = SearchFragment::class.java.simpleName
+class SearchFragment private constructor() : BottomSheetDialogFragment() {
+	companion object {
+		private val TAG = SearchFragment::class.java.simpleName
+
+		private var instance: SearchFragment? = null
+		fun getInstance(): SearchFragment {
+			if (instance == null) {
+				instance = SearchFragment()
+			}
+
+			return instance!!
+		}
+	}
+
 	private val viewModel: MainViewModel by activityViewModels()
 
 	private var binding: FragmentSearchBinding? = null
@@ -52,7 +63,7 @@ class SearchFragment : Fragment() {
 			when (it) {
 				is DataState.Loading -> {
 					binding?.pbSearch?.visibility = View.VISIBLE
-					binding?.rvSearch?.visibility = View.GONE
+					binding?.rvSearch?.visibility = View.INVISIBLE
 				}
 				is DataState.Success -> {
 					binding?.pbSearch?.visibility = View.GONE
@@ -81,14 +92,8 @@ class SearchFragment : Fragment() {
 
 	private fun showSearchResult(items: List<FeaturesItem>) {
 		SearchResultAdapter(items) {
-			// Hide soft keyboard
-//			(activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-//				.hideSoftInputFromWindow(activity?.currentFocus?.windowToken, 0)
-			binding?.inputSearch?.editText?.clearFocus()
-			(activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-				.hideSoftInputFromWindow(binding?.inputSearch?.editText?.windowToken, 0)
-
 			viewModel.foundPlacePosition.value = SearchingState.FoundPlace(it)
+			dismiss()
 		}.also {
 			binding?.rvSearch?.adapter = it
 			it.notifyDataSetChanged()
@@ -98,5 +103,10 @@ class SearchFragment : Fragment() {
 	override fun onDestroyView() {
 		super.onDestroyView()
 		binding = null
+	}
+
+	override fun onDismiss(dialog: DialogInterface) {
+		super.onDismiss(dialog)
+		instance = null
 	}
 }
